@@ -104,7 +104,7 @@ export const getColumns = ({ setEditingItem, handleDelete }: GetColumnsProps) =>
         key: "description",
         label: "Description",
         render: (p: ProductWithCategory) => (
-            <p className="font-medium text-gray-800 whitespace-nowrap line-clamp-1">{p?.description}</p>
+            <p className="line-clamp-2 text-gray-800 max-w-md text-sm">{p?.description}</p>
         ),
     },
     {

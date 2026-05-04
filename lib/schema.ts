@@ -8,6 +8,7 @@ import {
   numeric,
   integer,
   boolean,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -41,9 +42,7 @@ export const productsTable = pgTable("products", {
   description: varchar("description", { length: 500 }),
   image: text("image").notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
-  discountType: varchar("discount_type", { length: 20 }).$type<
-    "percent" | "amount"
-  >(),
+  discountType: varchar("discount_type", { length: 20 }).$type<"percent" | "amount">(),
   discountValue: numeric("discount_value", { precision: 10, scale: 2 }),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -62,13 +61,53 @@ export const offersTable = pgTable("offers", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const cartsTable = pgTable("carts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(),
+  productId: uuid("product_id")
+    .references(() => productsTable.id, { onDelete: "cascade" })
+    .notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (t) => ({
+  uniqueUserProduct: unique().on(t.userId, t.productId),
+}));
+
+export const favoritesTable = pgTable("favorites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(),
+  productId: uuid("product_id")
+    .references(() => productsTable.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  uniqueUserProduct: unique().on(t.userId, t.productId),
+}));
+
 export const categoriesRelations = relations(categoriesTable, ({ many }) => ({
   products: many(productsTable),
 }));
 
-export const productsRelations = relations(productsTable, ({ one }) => ({
+export const productsRelations = relations(productsTable, ({ one, many }) => ({
   category: one(categoriesTable, {
     fields: [productsTable.categoryId],
     references: [categoriesTable.id],
+  }),
+  cartItems: many(cartsTable),
+  favorites: many(favoritesTable),
+}));
+
+export const cartsRelations = relations(cartsTable, ({ one }) => ({
+  product: one(productsTable, {
+    fields: [cartsTable.productId],
+    references: [productsTable.id],
+  }),
+}));
+
+export const favoritesRelations = relations(favoritesTable, ({ one }) => ({
+  product: one(productsTable, {
+    fields: [favoritesTable.productId],
+    references: [productsTable.id],
   }),
 }));

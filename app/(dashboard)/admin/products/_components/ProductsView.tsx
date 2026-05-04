@@ -63,7 +63,7 @@ const ProductsView = ({ initialData }: { initialData: Product[] }) => {
     }, []);
 
     return (
-        <div className="bg-white flex-1 overflow-y-auto p-6  rounded-2xl shadow-sm border border-gray-100">
+        <div className="bg-white   p-6  rounded-2xl shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-sky-900 tracking-tight">
                     Products Management

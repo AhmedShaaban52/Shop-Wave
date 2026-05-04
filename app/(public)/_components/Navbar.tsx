@@ -55,7 +55,7 @@ const Navbar = () => {
 
     return (
         <header>
-            <div className="container flex min-h-16 items-center justify-between mx-auto px-4 md:px-6">
+            <div className="flex min-h-16 items-center justify-between mx-auto px-4 md:px-10">
                 <div className='flex items-center gap-12'>
                     <div className="text-2xl font-black tracking-tighter text-sky-900 dark:text-sky-100 active:scale-95 transition-transform cursor-pointer">
                         ShopWave

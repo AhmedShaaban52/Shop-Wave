@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <Toaster position="bottom-right" richColors />
         <AuthProvider>
-          <main className="pr-4">
+          <main>
             {children}
           </main>
         </AuthProvider>

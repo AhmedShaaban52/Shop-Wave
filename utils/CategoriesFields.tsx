@@ -65,7 +65,7 @@ export const getCategoryColumns = ({ setEditingItem, handleDelete }: GetColumnsP
         key: "description",
         label: "Description",
         render: (cat: Category) => (
-            <div className="line-clamp-2 text-gray-500 max-w-xs text-sm">
+            <div className="line-clamp-2 text-gray-800 max-w-md text-sm">
                 {cat.description || <span className="italic text-gray-300">—</span>}
             </div>
         ),

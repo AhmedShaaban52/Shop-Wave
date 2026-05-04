@@ -33,8 +33,7 @@ export default async function Home() {
     .filter((p: any) => p.isActive !== false) as ProductWithCategory[];
 
   return (
-    <div className="p-4 space-y-10">
-      <h1 className="text-2xl font-bold">Website</h1>
+    <div className="mt-10">
       <OfferSlider offers={offers} />
       <CategoryCard categories={categories} />
 
