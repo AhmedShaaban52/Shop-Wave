@@ -1,31 +1,48 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { ProductWithCategory } from "@/utils/ProductsFields";
+import {
+  fetchFavsAction,
+  addToFavAction,
+  removeFromFavAction,
+} from "@/lib/actions/favActions";
 
 interface FavStore {
   items: ProductWithCategory[];
-  addItem: (product: ProductWithCategory) => void;
-  removeItem: (id: string) => void;
+  loading: boolean;
+  fetchFavs: (userId: string) => Promise<void>;
+  toggle: (product: ProductWithCategory, userId: string) => Promise<void>;
   isFav: (id: string) => boolean;
-  toggle: (product: ProductWithCategory) => void;
 }
 
-export const useFavStore = create<FavStore>()(
-  persist(
-    (set, get) => ({
-      items: [],
-      addItem: (product) => set({ items: [...get().items, product] }),
-      removeItem: (id) =>
-        set({ items: get().items.filter((i) => i.id !== id) }),
-      isFav: (id) => get().items.some((i) => i.id === id),
-      toggle: (product) => {
-        if (get().isFav(product.id)) {
-          get().removeItem(product.id);
-        } else {
-          get().addItem(product);
-        }
-      },
-    }),
-    { name: "fav-storage" },
-  ),
-);
+export const useFavStore = create<FavStore>((set, get) => ({
+  items: [],
+  loading: false,
+
+  fetchFavs: async (userId) => {
+    set({ loading: true });
+    const result = await fetchFavsAction(userId);
+    if (result.success && result.data) {
+      const items = result.data.map((row: any) => row.products);
+      set({ items, loading: false });
+    } else {
+      set({ loading: false });
+    }
+  },
+
+  toggle: async (product, userId) => {
+    const isFav = get().isFav(product.id);
+    if (isFav) {
+      const result = await removeFromFavAction(userId, product.id);
+      if (result.success) {
+        set({ items: get().items.filter((i) => i.id !== product.id) });
+      }
+    } else {
+      const result = await addToFavAction(userId, product.id);
+      if (result.success) {
+        set({ items: [...get().items, product] });
+      }
+    }
+  },
+
+  isFav: (id) => get().items.some((i) => i.id === id),
+}));

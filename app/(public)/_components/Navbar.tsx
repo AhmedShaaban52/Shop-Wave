@@ -24,6 +24,7 @@ import Search from './Search';
 import { useAuth } from '@/context/authContext';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useFavStore } from '@/lib/store/favStore';
+import { useEffect } from 'react';
 
 
 const navigationItems = [
@@ -44,14 +45,31 @@ const navigationItems = [
 const Navbar = () => {
     const { session, user, loading, signOut, isAdmin } = useAuth();
     const cartItems = useCartStore((s) => s.items);
+    const fetchCart = useCartStore((s) => s.fetchCart);
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const favItems = useFavStore((s) => s.items);
+    const fetchFavs = useFavStore((s) => s.fetchFavs);
     const favCount = favItems.length;
+
+    console.log("cartItems", cartItems);
+    console.log("favItems", favItems);
+    
+
 
     const handleSignOut = async () => {
         await signOut();
     };
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchCart(user.id);
+            fetchFavs(user.id);
+        } else {
+            useCartStore.setState({ items: [] });
+            useFavStore.setState({ items: [] });
+        }
+    }, [user?.id]);
 
     return (
         <header>

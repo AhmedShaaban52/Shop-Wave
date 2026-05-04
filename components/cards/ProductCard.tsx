@@ -6,11 +6,13 @@ import { ProductWithCategory } from "@/utils/ProductsFields";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useFavStore } from "@/lib/store/favStore";
 import { calculatePrice } from "@/lib/calculatePrice";
+import { useAuth } from "@/context/authContext";  
 import { toast } from "sonner";
 
 export const ProductCard = ({ product }: { product: ProductWithCategory }) => {
     const addToCart = useCartStore((s) => s.addItem);
     const { toggle, isFav } = useFavStore();
+    const { user } = useAuth();  
     const fav = isFav(product.id);
 
     const originalPrice = parseFloat(product.price as string);
@@ -22,7 +24,10 @@ export const ProductCard = ({ product }: { product: ProductWithCategory }) => {
                 <Image src={product.image} alt={product.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
 
                 <button
-                    onClick={() => toggle(product)}
+                    onClick={() => {
+                        if (!user) { toast.error("Please login first"); return; }
+                        toggle(product, user.id);  
+                    }}
                     className="absolute top-4 right-4 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95 shadow-md z-10"
                 >
                     <Heart className={`w-5 h-5 ${fav ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
@@ -55,7 +60,8 @@ export const ProductCard = ({ product }: { product: ProductWithCategory }) => {
 
                 <button
                     onClick={() => {
-                        addToCart(product);
+                        if (!user) { toast.error("Please login first"); return; }
+                        addToCart(product, user.id);  
                         toast.success(`${product.name} added to cart!`);
                     }}
                     className="w-full bg-[#00628c] hover:bg-[#00557b] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98]"

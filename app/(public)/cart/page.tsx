@@ -5,9 +5,11 @@ import Link from "next/link";
 import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft, Shield, Truck } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { calculatePrice } from "@/lib/calculatePrice";
+import { useAuth } from "@/context/authContext";
 
 const CartPage = () => {
     const { items, removeItem, updateQuantity } = useCartStore();
+    const { user } = useAuth();
 
     const subtotal = items.reduce((sum, item) => {
         const price = calculatePrice(item) ?? parseFloat(item.price as string);
@@ -78,14 +80,14 @@ const CartPage = () => {
                                         <div className="flex items-center justify-between mt-3">
                                             <div className="flex items-center gap-2">
                                                 <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                    onClick={() => updateQuantity(item.id, item.quantity - 1, user!.id)}
                                                     className="w-8 h-8 rounded-full bg-gray-100 hover:bg-sky-100 hover:text-sky-700 flex items-center justify-center transition-all active:scale-95"
                                                 >
                                                     <Minus className="w-3 h-3" />
                                                 </button>
                                                 <span className="w-6 text-center font-bold text-gray-800">{item.quantity}</span>
                                                 <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                    onClick={() => updateQuantity(item.id, item.quantity + 1, user!.id)}
                                                     className="w-8 h-8 rounded-full bg-gray-100 hover:bg-sky-100 hover:text-sky-700 flex items-center justify-center transition-all active:scale-95"
                                                 >
                                                     <Plus className="w-3 h-3" />
@@ -93,7 +95,7 @@ const CartPage = () => {
                                             </div>
 
                                             <button
-                                                onClick={() => removeItem(item.id)}
+                                                onClick={() => removeItem(item.id, user!.id)}
                                                 className="flex items-center gap-1.5 text-red-400 hover:text-red-600 text-xs font-medium transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />

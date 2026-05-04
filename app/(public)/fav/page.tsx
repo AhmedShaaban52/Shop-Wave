@@ -7,10 +7,13 @@ import { useFavStore } from "@/lib/store/favStore";
 import { useCartStore } from "@/lib/store/cartStore";
 import { calculatePrice } from "@/lib/calculatePrice";
 import { toast } from "sonner";
+import { useAuth } from "@/context/authContext";
 
 const FavPage = () => {
-    const { items, removeItem } = useFavStore();
+
+    const { items, toggle } = useFavStore();
     const addToCart = useCartStore((s) => s.addItem);
+    const { user } = useAuth();
 
     if (items.length === 0) {
         return (
@@ -61,7 +64,7 @@ const FavPage = () => {
                                     />
                                     <button
                                         onClick={() => {
-                                            removeItem(item.id);
+                                            toggle(item, user!.id);
                                             toast.success("Removed from favorites");
                                         }}
                                         className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-lg flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-white transition-all shadow-sm"
@@ -82,8 +85,8 @@ const FavPage = () => {
 
                                     <button
                                         onClick={() => {
-                                            addToCart(item);
-                                            removeItem(item.id);
+                                            addToCart(item, user!.id);
+                                            toggle(item, user!.id);
                                             toast.success(`${item.name} moved to cart!`);
                                         }}
                                         className="mt-3 w-full bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
