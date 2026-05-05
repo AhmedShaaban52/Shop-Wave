@@ -6,6 +6,8 @@ import CategoryCard from "@/components/cards/CategoryCard";
 import { ProductCard } from "@/components/cards/ProductCard";
 import { ProductWithCategory } from "@/utils/ProductsFields";
 import { Category } from "@/lib/types";
+import FlashDeal from "@/components/FlashDeal";
+import Footer from "@/components/Footer";
 
 function isActive(item: { startDate?: Date | string | null; endDate?: Date | string | null }) {
   const now = new Date();
@@ -50,6 +52,9 @@ export default async function Home() {
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
+
+      <FlashDeal/>
+      <Footer/>
     </div>
   );
 }
