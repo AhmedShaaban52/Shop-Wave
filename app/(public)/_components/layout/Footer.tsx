@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import Logo from "@/app/(public)/_components/layout/Logo";
 
 export default function Footer() {
     const [email, setEmail] = useState("");
@@ -16,15 +17,13 @@ export default function Footer() {
     };
 
     return (
-        <footer  className="w-full mt-20 border border-gray-200">
+        <footer className="w-full mt-20 border border-gray-200">
             <div className="w-[95%] mx-auto py-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
 
                     {/* ── Brand ── */}
                     <div className="lg:col-span-1 flex flex-col gap-4">
-                        <Link href="/" className="text-2xl font-black tracking-tight" style={{ color: "#0c314e" }}>
-                            Shop<span style={{ color: "#00628c" }}>Wave</span>
-                        </Link>
+                        <Logo />
                         <p className="text-sm leading-relaxed" style={{ color: "#4a7a96" }}>
                             Curating the intersection of modern lifestyle and timeless design.
                             Experience the essence of light and form through our editorial selections.

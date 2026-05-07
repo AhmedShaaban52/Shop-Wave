@@ -123,3 +123,47 @@ export async function deleteProduct(id: string) {
   revalidatePath("/admin/products");
   return { success: true, message: "Product deleted successfully" };
 }
+
+// export async function searchProducts(query: string) {
+//   const supabase = await getServerSupabase();
+//   const { data, error } = await supabase
+//     .from("products")
+//     .select(PRODUCT_SELECT)
+//     .ilike("name", `%${query}%`)
+//     .order("created_at", { ascending: false });
+
+//   if (error) {
+//     console.error("Error searching products:", error);
+//     return { success: false, error: error.message };
+//   }
+//   return { success: true, data: data as unknown as ProductWithCategory[] };
+// }
+
+export async function searchProducts(query: string, categoryName?: string) {
+  const supabase = await getServerSupabase();
+
+  let supabaseQuery = supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (query) {
+    supabaseQuery = supabaseQuery.ilike("name", `%${query}%`);
+  }
+
+  const { data, error } = await supabaseQuery;
+
+  if (error) {
+    console.error("Error searching products:", error);
+    return { success: false, error: error.message };
+  }
+
+  let result = (data as unknown as ProductWithCategory[]) || [];
+
+  if (categoryName && categoryName !== "All") {
+    result = result.filter((p) => (p as any).categories?.name === categoryName);
+  }
+
+  return { success: true, data: result };
+}

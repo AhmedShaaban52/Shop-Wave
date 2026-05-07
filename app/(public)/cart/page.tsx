@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft, Shield, Truck } from "lucide-react";
+import { Trash2, ShoppingBag, ArrowLeft, Shield, Truck } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { calculatePrice } from "@/lib/calculatePrice";
 import { useAuth } from "@/context/authContext";
+import { ProductCart } from "../_components/ProductCart";
 
 const CartPage = () => {
-    const { items, removeItem, updateQuantity } = useCartStore();
+    const { items, removeItem } = useCartStore();
     const { user } = useAuth();
 
     const subtotal = items.reduce((sum, item) => {
@@ -36,8 +37,8 @@ const CartPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f0f4f8] px-4 py-10 font-sans">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-[#f0f4f8] px-4 md:px-8 py-10 font-sans">
+            <div>
                 <div className="mb-8">
                     <Link href="/" className="flex items-center gap-2 text-sky-600 hover:text-sky-800 text-sm font-medium mb-4 transition-colors w-fit">
                         <ArrowLeft className="w-4 h-4" />
@@ -78,29 +79,22 @@ const CartPage = () => {
                                         </div>
 
                                         <div className="flex items-center justify-between mt-3">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center justify-between mt-3">
+                                                <ProductCart
+                                                    product={item}
+                                                    userId={user!.id}
+                                                    quantity={item.quantity}
+                                                    variant="compact"
+                                                />
+
                                                 <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity - 1, user!.id)}
-                                                    className="w-8 h-8 rounded-full bg-gray-100 hover:bg-sky-100 hover:text-sky-700 flex items-center justify-center transition-all active:scale-95"
+                                                    onClick={() => removeItem(item.id, user!.id)}
+                                                    className="flex items-center gap-1.5 pl-4 text-red-400 hover:text-red-600 text-xs font-medium transition-colors cursor-pointer"
                                                 >
-                                                    <Minus className="w-3 h-3" />
-                                                </button>
-                                                <span className="w-6 text-center font-bold text-gray-800">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1, user!.id)}
-                                                    className="w-8 h-8 rounded-full bg-gray-100 hover:bg-sky-100 hover:text-sky-700 flex items-center justify-center transition-all active:scale-95"
-                                                >
-                                                    <Plus className="w-3 h-3" />
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    Remove
                                                 </button>
                                             </div>
-
-                                            <button
-                                                onClick={() => removeItem(item.id, user!.id)}
-                                                className="flex items-center gap-1.5 text-red-400 hover:text-red-600 text-xs font-medium transition-colors"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                                Remove
-                                            </button>
                                         </div>
                                     </div>
                                 </div>

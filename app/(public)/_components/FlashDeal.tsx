@@ -43,14 +43,17 @@ const TimeBlock = ({ value, label }: { value: number; label: string }) => (
 );
 
 const FlashDeal = () => {
-    const [timeLeft, setTimeLeft] = useState<TimeLeft>(getTimeLeft());
+    const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
     const addToCart = useCartStore((s) => s.addItem);
     const { user } = useAuth();
 
     useEffect(() => {
+        setTimeLeft(getTimeLeft()); 
         const id = setInterval(() => setTimeLeft(getTimeLeft()), 1_000);
         return () => clearInterval(id);
     }, []);
+
+    if (!timeLeft) return null
 
     const originalPrice = parseFloat(FLASH_PRODUCT.price);
     const finalPrice = +(originalPrice * (1 - FLASH_PRODUCT.discount / 100)).toFixed(2);

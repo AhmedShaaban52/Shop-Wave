@@ -1,13 +1,12 @@
 import { getOffers } from "@/app/(dashboard)/admin/offers/actions";
 import { getCategories } from "@/app/(dashboard)/admin/categories/actions";
 import { getProducts } from "@/app/(dashboard)/admin/products/actions";
-import OfferSlider from "./_components/OfferSlider";
-import CategoryCard from "@/components/cards/CategoryCard";
-import { ProductCard } from "@/components/cards/ProductCard";
+import OfferSlider from "./_components/slider/OfferSlider";
+import CategoryCard from "@/app/(public)/_components/cards/CategoryCard";
+import { ProductCard } from "@/app/(public)/_components/cards/ProductCard";
 import { ProductWithCategory } from "@/utils/ProductsFields";
 import { Category } from "@/lib/types";
-import FlashDeal from "@/components/FlashDeal";
-import Footer from "@/components/Footer";
+import FlashDeal from "@/app/(public)/_components/FlashDeal";
 
 function isActive(item: { startDate?: Date | string | null; endDate?: Date | string | null }) {
   const now = new Date();
@@ -26,13 +25,13 @@ export default async function Home() {
   const offers = offersResult.success ? offersResult.data ?? [] : [];
 
   const categories = (categoriesResult.success ? categoriesResult.data ?? [] : [])
-    .filter((c: any) => c.isActive !== false) as Category[];
+    .filter((c: Category) => c.isActive !== false) as Category[];
 
   console.log(categories);
-    
+
 
   const products = (productsResult.success ? productsResult.data ?? [] : [])
-    .filter((p: any) => p.isActive !== false) as ProductWithCategory[];
+    .filter((p: ProductWithCategory) => p.isActive !== false) as ProductWithCategory[];
 
   return (
     <div className="mt-10">
@@ -53,8 +52,7 @@ export default async function Home() {
         ))}
       </div>
 
-      <FlashDeal/>
-      <Footer/>
+      <FlashDeal />
     </div>
   );
 }
