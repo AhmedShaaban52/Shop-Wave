@@ -35,7 +35,7 @@ export default async function Home() {
 
   return (
     <div className="md:mt-2">
-      {/* <OfferSlider offers={offers} /> */}
+      <OfferSlider offers={offers} />
       <CategoryCard categories={categories} />
 
       <div className="pt-8 mb-6 font-sans">
