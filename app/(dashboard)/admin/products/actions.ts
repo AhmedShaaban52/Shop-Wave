@@ -11,6 +11,7 @@ const PRODUCT_SELECT = `
   name,
   description,
   image,
+  thumbnails,
   price,
   discountType:discount_type,
   discountValue:discount_value,
@@ -60,6 +61,7 @@ export async function createProduct(data: ProductSchemaType) {
         name: data.name,
         description: data.description || null,
         image: data.image,
+        thumbnails: (data as any).thumbnails || [],
         price: data.price,
         discount_type: data.discountType || null,
         discount_value: data.discountValue || null,
@@ -90,6 +92,7 @@ export async function updateProduct(id: string, data: ProductSchemaType) {
       name: data.name,
       description: data.description || null,
       image: data.image,
+      thumbnails: (data as any).thumbnails || [],
       price: data.price,
       discount_type: data.discountType || null,
       discount_value: data.discountValue || null,
@@ -123,21 +126,6 @@ export async function deleteProduct(id: string) {
   revalidatePath("/admin/products");
   return { success: true, message: "Product deleted successfully" };
 }
-
-// export async function searchProducts(query: string) {
-//   const supabase = await getServerSupabase();
-//   const { data, error } = await supabase
-//     .from("products")
-//     .select(PRODUCT_SELECT)
-//     .ilike("name", `%${query}%`)
-//     .order("created_at", { ascending: false });
-
-//   if (error) {
-//     console.error("Error searching products:", error);
-//     return { success: false, error: error.message };
-//   }
-//   return { success: true, data: data as unknown as ProductWithCategory[] };
-// }
 
 export async function searchProducts(query: string, categoryName?: string) {
   const supabase = await getServerSupabase();

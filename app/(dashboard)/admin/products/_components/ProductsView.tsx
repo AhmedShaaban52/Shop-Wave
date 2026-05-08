@@ -108,6 +108,7 @@ const ProductsView = ({ initialData }: { initialData: Product[] }) => {
                         price: Number(editingItem.price),
                         description: editingItem.description || "",
                         image: editingItem.image,
+                        thumbnails: (editingItem as any).thumbnails || [],
                         discountType: (editingItem.discountType as "percent" | "amount") || undefined,
                         discountValue: editingItem.discountValue ? Number(editingItem.discountValue) : undefined,
                         isActive: (editingItem as any).isActive === false ? "false" : "true",  

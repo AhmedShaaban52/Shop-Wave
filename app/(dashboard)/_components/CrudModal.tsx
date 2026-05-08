@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/admin/_components/CrudModal.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useForm, FieldValues, DefaultValues, Path, Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ZodType } from "zod";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,7 @@ export function CrudModal<T extends FieldValues>({
 }: CrudModalProps<T>) {
     const [internalOpen, setInternalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [previews, setPreviews] = useState<Record<string, string>>({});
+    const [previews, setPreviews] = useState<Record<string, any>>({});
 
     const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
     const setOpen = controlledOnOpenChange || setInternalOpen;
@@ -76,11 +75,13 @@ export function CrudModal<T extends FieldValues>({
     useEffect(() => {
         if (mode === "edit" && initialData && open) {
             form.reset(initialData as DefaultValues<T>);
-            const imagePreviews: Record<string, string> = {};
-
+            const imagePreviews: Record<string, any> = {};
             const data = initialData as any;
             fields.forEach((f) => {
                 if (f.type === "file" && typeof data[f.name] === "string") {
+                    imagePreviews[f.name] = data[f.name];
+                }
+                if (f.type === "files" && Array.isArray(data[f.name])) {
                     imagePreviews[f.name] = data[f.name];
                 }
             });
@@ -117,6 +118,17 @@ export function CrudModal<T extends FieldValues>({
                         processed[field.name] as File,
                         field.name
                     );
+                }
+                if (field.type === "files" && Array.isArray(processed[field.name])) {
+                    const urls: string[] = [];
+                    for (const f of processed[field.name] as (File | string)[]) {
+                        if (f instanceof File) {
+                            urls.push(await uploadImage(f, uploadPath || field.name));
+                        } else if (typeof f === "string") {
+                            urls.push(f);
+                        }
+                    }
+                    processed[field.name] = urls;
                 }
             }
 
@@ -171,7 +183,7 @@ export function CrudModal<T extends FieldValues>({
                             </Select>
                         ) : fieldConfig.type === "file" ? (
                             <div className="space-y-2">
-                                {previews[fieldConfig.name] && (
+                                {previews[fieldConfig.name] && typeof previews[fieldConfig.name] === "string" && (
                                     <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
                                         <Image
                                             src={previews[fieldConfig.name]}
@@ -196,6 +208,56 @@ export function CrudModal<T extends FieldValues>({
                                         }
                                     }}
                                 />
+                            </div>
+                        ) : fieldConfig.type === "files" ? (
+                            <div className="space-y-3">
+                                {/* Previews Grid */}
+                                {(previews[fieldConfig.name] as string[] || []).length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {(previews[fieldConfig.name] as string[]).map((url, i) => (
+                                            <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                                                <Image src={url} alt={`img-${i}`} fill className="object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const currentPreviews = (previews[fieldConfig.name] as string[]);
+                                                        const currentValues = (field.value as (File | string)[]) || [];
+                                                        setPreviews(prev => ({
+                                                            ...prev,
+                                                            [fieldConfig.name]: currentPreviews.filter((_, idx) => idx !== i),
+                                                        }));
+                                                        field.onChange(currentValues.filter((_, idx) => idx !== i));
+                                                    }}
+                                                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    disabled={isLoading}
+                                    onChange={(e) => {
+                                        const files = Array.from(e.target.files || []);
+                                        if (!files.length) return;
+                                        const newPreviews = files.map(f => URL.createObjectURL(f));
+                                        const existingPreviews = (previews[fieldConfig.name] as string[]) || [];
+                                        const existingValues = (field.value as (File | string)[]) || [];
+                                        setPreviews(prev => ({
+                                            ...prev,
+                                            [fieldConfig.name]: [...existingPreviews, ...newPreviews],
+                                        }));
+                                        field.onChange([...existingValues, ...files]);
+                                        e.target.value = "";
+                                    }}
+                                />
+                                <p className="text-xs text-gray-400">
+                                    {((previews[fieldConfig.name] as string[]) || []).length} image(s) — unlimited uploads
+                                </p>
                             </div>
                         ) : (
                             <Input
@@ -264,7 +326,7 @@ export function CrudModal<T extends FieldValues>({
                 </DialogTrigger>
             )}
 
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>
                         {mode === "create" ? `Create ${title}` : `Edit ${title}`}

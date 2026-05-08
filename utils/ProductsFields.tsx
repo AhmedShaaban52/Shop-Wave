@@ -65,6 +65,12 @@ export const getProductFields = (
             colSpan: 1
         },
         {
+            name: "thumbnails",
+            label: "Product Gallery",
+            type: "files",
+            colSpan: 2,
+        },
+        {
             name: "isActive",
             label: "Status",
             type: "select",
@@ -92,6 +98,36 @@ export const getColumns = ({ setEditingItem, handleDelete }: GetColumnsProps) =>
                 )}
             </div>
         ),
+    },
+    {
+        key: "thumbnails",
+        label: "Gallery",
+        render: (p: ProductWithCategory) => {
+            const thumbs = (p as any).thumbnails as string[] | null;
+            if (!thumbs || thumbs.length === 0)
+                return <span className="italic text-gray-300 text-sm">—</span>;
+            return (
+                <div className="flex gap-1">
+                    {thumbs.slice(0, 3).map((url, i) => (
+                        <div key={i} className="w-9 h-9 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                            <Image
+                                src={url}
+                                alt=""
+                                width={36}
+                                height={36}
+                                unoptimized  // ← ضيف
+                                className="object-cover w-full h-full"
+                            />
+                        </div>
+                    ))}
+                    {thumbs.length > 3 && (
+                        <div className="w-9 h-9 rounded-md bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
+                            +{thumbs.length - 3}
+                        </div>
+                    )}
+                </div>
+            );
+        },
     },
     {
         key: "name",

@@ -17,7 +17,7 @@ const CartBadge = () => {
         }
     }, [user?.id, fetchCart]);
     return (
-        <Link href="/cart" className="relative p-2 text-slate-600 hover:text-sky-600 transition-colors cursor-pointer">
+        <Link href="/cart" className="relative md:p-2 text-slate-600 hover:text-sky-600 transition-colors cursor-pointer">
             <ShoppingCart className="h-5 w-5" />
             {cartCount > 0 && (
                 <span className="absolute top-1 right-0 bg-sky-600 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">

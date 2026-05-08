@@ -34,12 +34,12 @@ export default async function Home() {
     .filter((p: ProductWithCategory) => p.isActive !== false) as ProductWithCategory[];
 
   return (
-    <div className="mt-10">
-      <OfferSlider offers={offers} />
+    <div className="md:mt-2">
+      {/* <OfferSlider offers={offers} /> */}
       <CategoryCard categories={categories} />
 
-      <div className="mb-6 font-sans">
-        <h2 className="text-[32px] font-bold text-sky-900 tracking-tight leading-tight">
+      <div className="pt-8 mb-6 font-sans">
+        <h2 className="text-lg md:text-2xl font-bold text-sky-900 tracking-tight">
           New Arrivals
         </h2>
         <p className="text-[17px] font-medium text-[#6c8299] mt-2">

@@ -56,7 +56,7 @@ const Search = () => {
         <div className="relative z-[110]" ref={dropdownRef}>
             <form
                 onSubmit={handleSearchSubmit}
-                className={`relative w-80`}
+                className="relative w-full md:w-80"
             >
                 <div className={`relative  flex items-center bg-gray-50/50 border rounded-full px-4 py-2.5 transition-all duration-300 ${isFocused
                     ? "border-sky-400 ring-4 ring-sky-50 bg-white"

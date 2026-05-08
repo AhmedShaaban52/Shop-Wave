@@ -7,13 +7,13 @@ interface CategoryCardProps {
 
 const CategoryCard = ({ categories }: CategoryCardProps) => {
     return (
-        <section>
+        <section className="pt-8">
             <div className="mb-6">
-                <h2 className="text-2xl font-bold text-sky-900 tracking-tight">Shop by Category</h2>
+                <h2 className="text-lg md:text-2xl font-bold text-sky-900 tracking-tight">Shop by Category</h2>
                 <p className="text-sm text-gray-400 mt-1">Curated collections for every facet of your lifestyle.</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {categories.map((cat) => (
                     <div
                         key={cat.id}

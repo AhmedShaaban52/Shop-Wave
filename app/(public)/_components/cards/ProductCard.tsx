@@ -6,15 +6,16 @@ import { ProductWithCategory } from "@/utils/ProductsFields";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useFavStore } from "@/lib/store/favStore";
 import { calculatePrice } from "@/lib/calculatePrice";
-import { useAuth } from "@/context/authContext";  
+import { useAuth } from "@/context/authContext";
 import { toast } from "sonner";
 import { ProductCart } from "../ProductCart";
+import Link from "next/link";
 
 export const ProductCard = ({ product }: { product: ProductWithCategory }) => {
     const { addItem, items } = useCartStore();
     const { toggle, isFav } = useFavStore();
-    const { user } = useAuth();  
-    
+    const { user } = useAuth();
+
     const cartItem = items.find((item) => item.id === product.id);
     const quantity = cartItem?.quantity || 0;
     const fav = isFav(product.id);
@@ -23,19 +24,21 @@ export const ProductCard = ({ product }: { product: ProductWithCategory }) => {
     const finalPrice = calculatePrice(product);
 
     return (
-        <article className="group flex flex-col bg-white rounded-[1.5rem] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-gray-100">
-            <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
-                <Image 
-                    src={product.image} 
-                    alt={product.name} 
-                    fill 
-                    className="object-cover transition-transform duration-700 group-hover:scale-110" 
-                />
+        <section className="group flex flex-col bg-white rounded-[1.5rem] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-gray-100 cursor-pointer">
+            <div className="relative aspect-square overflow-hidden bg-gray-50">
+                <Link href={`/product-details/${product.id}`} className="z-0">
+                    <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                </Link>
 
                 <button
                     onClick={() => {
                         if (!user) { toast.error("Please login first"); return; }
-                        toggle(product, user.id);  
+                        toggle(product, user.id);
                     }}
                     className="absolute top-4 right-4 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95 shadow-md z-10 cursor-pointer"
                 >
@@ -73,7 +76,7 @@ export const ProductCard = ({ product }: { product: ProductWithCategory }) => {
                     <button
                         onClick={() => {
                             if (!user) { toast.error("Please login first"); return; }
-                            addItem(product, user.id);  
+                            addItem(product, user.id);
                             toast.success(`${product.name} added to cart!`);
                         }}
                         className="w-full bg-[#00628c] hover:bg-[#00557b] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
@@ -82,9 +85,9 @@ export const ProductCard = ({ product }: { product: ProductWithCategory }) => {
                         <span>Add to Cart</span>
                     </button>
                 ) : (
-                        user && <ProductCart product={product} userId={user.id} quantity={quantity} variant="default" />
+                    user && <ProductCart product={product} userId={user.id} quantity={quantity} variant="default" />
                 )}
             </div>
-        </article>
+        </section>
     );
 };

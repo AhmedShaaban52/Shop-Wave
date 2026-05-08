@@ -65,7 +65,7 @@ const FlashDeal = () => {
     };
 
     return (
-        <section className="w-full rounded-3xl overflow-hidden" style={{ background: "#0c314e" }}>
+        <section className="w-full rounded-3xl overflow-hidden mt-14" style={{ background: "#0c314e" }}>
             <div className="grid grid-cols-1 md:grid-cols-2 min-h-[340px]">
 
                 {/* ── LEFT: Content ── */}

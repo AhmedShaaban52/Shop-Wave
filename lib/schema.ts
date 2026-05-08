@@ -41,8 +41,11 @@ export const productsTable = pgTable("products", {
   name: varchar("name", { length: 100 }).notNull(),
   description: varchar("description", { length: 500 }),
   image: text("image").notNull(),
+  thumbnails: text("thumbnails").array(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
-  discountType: varchar("discount_type", { length: 20 }).$type<"percent" | "amount">(),
+  discountType: varchar("discount_type", { length: 20 }).$type<
+    "percent" | "amount"
+  >(),
   discountValue: numeric("discount_value", { precision: 10, scale: 2 }),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

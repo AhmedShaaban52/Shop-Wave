@@ -43,6 +43,7 @@ const OfferSlider = ({ offers }: OfferSliderProps) => {
                             src={offer.image}
                             alt={offer.name}
                             fill
+                            unoptimized 
                             className="object-cover"
                             sizes="100vw"
                             priority

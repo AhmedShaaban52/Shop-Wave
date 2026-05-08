@@ -10,6 +10,7 @@ export const productSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   description: z.string().max(500).optional().or(z.literal("")),
   image: z.any(),
+  thumbnails: z.any().optional(),
   price: z.coerce.number().min(0.01, "Price is required"),
   categoryId: z.string().min(1, "Category is required"),
   discountType: z.enum(["percent", "amount"]).optional(),
@@ -48,6 +49,7 @@ export type FieldType =
   | "textarea"
   | "select"
   | "file"
+  | "files"
   | "date";
 
 export interface ModalField {
