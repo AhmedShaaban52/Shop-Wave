@@ -64,29 +64,63 @@ export const offersTable = pgTable("offers", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const cartsTable = pgTable("carts", {
+export const cartsTable = pgTable(
+  "carts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull(),
+    productId: uuid("product_id")
+      .references(() => productsTable.id, { onDelete: "cascade" })
+      .notNull(),
+    quantity: integer("quantity").notNull().default(1),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    uniqueUserProduct: unique().on(t.userId, t.productId),
+  }),
+);
+
+export const favoritesTable = pgTable(
+  "favorites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull(),
+    productId: uuid("product_id")
+      .references(() => productsTable.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    uniqueUserProduct: unique().on(t.userId, t.productId),
+  }),
+);
+
+export const ordersTable = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull(),
-  productId: uuid("product_id")
-    .references(() => productsTable.id, { onDelete: "cascade" })
-    .notNull(),
-  quantity: integer("quantity").notNull().default(1),
+  stripeSessionId: text("stripe_session_id").notNull().unique(),
+  stripePaymentIntent: text("stripe_payment_intent"),
+  status: varchar("status", { length: 20 }).default("pending"),
+  total: numeric("total", { precision: 10, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (t) => ({
-  uniqueUserProduct: unique().on(t.userId, t.productId),
-}));
+});
 
-export const favoritesTable = pgTable("favorites", {
+export const orderItemsTable = pgTable("order_items", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
-  productId: uuid("product_id")
-    .references(() => productsTable.id, { onDelete: "cascade" })
+  orderId: uuid("order_id")
+    .references(() => ordersTable.id, { onDelete: "cascade" })
     .notNull(),
+  productId: uuid("product_id")
+    .references(() => productsTable.id)
+    .notNull(),
+  name: text("name").notNull(),
+  image: text("image").notNull(),
+  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  quantity: integer("quantity").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (t) => ({
-  uniqueUserProduct: unique().on(t.userId, t.productId),
-}));
+});
 
 export const categoriesRelations = relations(categoriesTable, ({ many }) => ({
   products: many(productsTable),
@@ -111,6 +145,21 @@ export const cartsRelations = relations(cartsTable, ({ one }) => ({
 export const favoritesRelations = relations(favoritesTable, ({ one }) => ({
   product: one(productsTable, {
     fields: [favoritesTable.productId],
+    references: [productsTable.id],
+  }),
+}));
+
+export const ordersRelations = relations(ordersTable, ({ many }) => ({
+  items: many(orderItemsTable),
+}));
+
+export const orderItemsRelations = relations(orderItemsTable, ({ one }) => ({
+  order: one(ordersTable, {
+    fields: [orderItemsTable.orderId],
+    references: [ordersTable.id],
+  }),
+  product: one(productsTable, {
+    fields: [orderItemsTable.productId],
     references: [productsTable.id],
   }),
 }));

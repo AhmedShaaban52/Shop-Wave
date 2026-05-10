@@ -7,6 +7,8 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { calculatePrice } from "@/lib/calculatePrice";
 import { useAuth } from "@/context/authContext";
 import { ProductCart } from "../_components/ProductCart";
+import { toast } from "sonner";
+import { createCheckoutSession } from "@/lib/actions/checkoutActions";
 
 const CartPage = () => {
     const { items, removeItem } = useCartStore();
@@ -19,6 +21,15 @@ const CartPage = () => {
 
     const tax = subtotal * 0.1;
     const total = subtotal + tax;
+
+    const handleCheckout = async () => {
+        if (!user) { toast.error("Please login first"); return; }
+        try {
+            await createCheckoutSession(items, user.id);
+        } catch (err) {
+            toast.error("Checkout failed");
+        }
+    };
 
     if (items.length === 0) {
         return (
@@ -126,7 +137,7 @@ const CartPage = () => {
                                 </div>
                             </div>
 
-                            <button className="w-full mt-6 bg-sky-700 hover:bg-sky-800 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-md shadow-sky-200">
+                            <button onClick={handleCheckout} className="w-full mt-6 bg-sky-700 hover:bg-sky-800 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-md shadow-sky-200 cursor-pointer">
                                 Proceed to Checkout
                             </button>
 

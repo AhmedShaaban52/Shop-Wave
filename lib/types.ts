@@ -1,10 +1,11 @@
-// lib/types/index.ts
 import { z } from "zod";
-import { categoriesTable, offersTable, productsTable } from "./schema";
+import { categoriesTable, offersTable, orderItemsTable, ordersTable, productsTable } from "./schema";
 
 export type Category = typeof categoriesTable.$inferSelect;
 export type Offer = typeof offersTable.$inferSelect;
 export type Product = typeof productsTable.$inferSelect;
+export type Order = typeof ordersTable.$inferSelect; 
+export type OrderItem = typeof orderItemsTable.$inferSelect;
 
 export const productSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
