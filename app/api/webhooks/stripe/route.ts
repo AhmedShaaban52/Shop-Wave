@@ -1,58 +1,55 @@
-import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { getServerSupabase } from "@/lib/supabase/server";
-import Stripe from "stripe";
+import { headers } from "next/headers";
+import { supabaseAdmin } from "@/lib/supabase/admin"; 
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const signature = (await headers()).get("Stripe-Signature") as string;
 
-  let event: Stripe.Event;
-
+  let event;
   try {
     event = stripe.webhooks.constructEvent(
       body,
-      sig,
+      signature,
       process.env.STRIPE_WEBHOOK_SECRET!,
     );
-  } catch (err) {
-    return NextResponse.json({ error: "Webhook error" }, { status: 400 });
+  } catch (err: any) {
+    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const { userId, items } = session.metadata!;
-    const parsedItems = JSON.parse(items);
+    const session = event.data.object as any;
 
-    const supabase = await getServerSupabase();
+    const userId = session.metadata.userId;
+    const items = JSON.parse(session.metadata.items);
 
-    const { data: order } = await supabase
+    const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
         user_id: userId,
         stripe_session_id: session.id,
-        stripe_payment_intent: session.payment_intent as string,
+        stripe_payment_intent: session.payment_intent,
+        total: (session.amount_total / 100).toFixed(2),
         status: "paid",
-        total: (session.amount_total! / 100).toFixed(2),
       })
       .select()
       .single();
 
-    if (order) {
-      await supabase.from("order_items").insert(
-        parsedItems.map((item: any) => ({
-          order_id: order.id,
-          product_id: item.productId,
-          name: item.name,
-          image: item.image,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-      );
+    if (orderError) return new Response("Error saving order", { status: 500 });
 
-      await supabase.from("carts").delete().eq("user_id", userId);
-    }
+    const orderItems = items.map((item: any) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      name: item.name,
+      image: item.image,
+      price: item.price,
+      quantity: item.quantity,
+    }));
+
+    await supabaseAdmin.from("order_items").insert(orderItems);
+
+    await supabaseAdmin.from("carts").delete().eq("user_id", userId);
   }
 
-  return NextResponse.json({ received: true });
+  return new Response(null, { status: 200 });
 }

@@ -65,3 +65,78 @@ export async function createCheckoutSession(items: CartItem[], userId: string) {
 
   redirect(session.url!);
 }
+export async function getUserOrders() {
+  const supabase = await getServerSupabase();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, data: [] };
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      `
+      *,
+      order_items (*)
+    `,
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) return { success: false, error: error.message, data: [] };
+  return { success: true, data };
+}
+
+export async function confirmOrder(sessionId: string) {
+  const supabase = await getServerSupabase();
+
+  const { data: existingOrder } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("stripe_session_id", sessionId)
+    .single();
+
+  if (existingOrder) return { success: true };
+
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  if (session.payment_status !== "paid")
+    return { success: false, error: "لم يتم الدفع" };
+
+  const userId = session.metadata?.userId;
+  const items = JSON.parse(session.metadata?.items || "[]");
+
+  if (!userId) return { success: false, error: "بيانات المستخدم مفقودة" };
+
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .insert({
+      user_id: userId,
+      stripe_session_id: sessionId,
+      stripe_payment_intent: session.payment_intent as string,
+      total: (session.amount_total! / 100).toFixed(2),
+      status: "paid",
+    })
+    .select()
+    .single();
+
+  if (orderError) throw orderError;
+
+  const orderItems = items.map((item: any) => ({
+    order_id: order.id,
+    product_id: item.productId,
+    name: item.name,
+    image: item.image,
+    price: item.price,
+    quantity: item.quantity,
+  }));
+
+  const { error: itemsError } = await supabase
+    .from("order_items")
+    .insert(orderItems);
+  if (itemsError) throw itemsError;
+
+  await supabase.from("carts").delete().eq("user_id", userId);
+
+  return { success: true };
+}

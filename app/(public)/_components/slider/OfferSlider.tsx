@@ -84,13 +84,13 @@ const OfferSlider = ({ offers }: OfferSliderProps) => {
                 <>
                     <button
                         onClick={prev}
-                        className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                     >
                         <ChevronLeft className="h-6 w-6 text-white" />
                     </button>
                     <button
                         onClick={next}
-                        className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                     >
                         <ChevronRight className="h-6 w-6 text-white" />
                     </button>
