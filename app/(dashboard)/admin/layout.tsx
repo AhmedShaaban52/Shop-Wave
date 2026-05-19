@@ -29,10 +29,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 { name: "All Products", href: "/admin/products" },
                 { name: "Categories", href: "/admin/categories" },
                 { name: "Deals & Offers", href: "/admin/offers" },
+                { name: "Coupons", href: "/admin/coupons" },
             ],
         },
         { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-        { name: "Settings", href: "/admin/settings", icon: Settings },
     ];
 
 
@@ -72,7 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     <>
                                         <button
                                             onClick={() => toggleDropdown(item.name)}
-                                            className={`group flex w-full items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative overflow-hidden ${isActive
+                                            className={`group flex w-full items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative overflow-hidden cursor-pointer ${isActive
                                                 ? "bg-[#4FBF8B]/10 text-sky-700"
                                                 : "text-gray-700 hover:text-sky-900"
                                                 }`}

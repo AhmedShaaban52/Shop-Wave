@@ -122,6 +122,29 @@ export const orderItemsTable = pgTable("order_items", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const couponsTable = pgTable("coupons", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  discountType: varchar("discount_type", { length: 20 })
+    .$type<"percent" | "amount">()
+    .notNull(),
+  discountValue: numeric("discount_value", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  minOrderAmount: numeric("min_order_amount", {
+    precision: 10,
+    scale: 2,
+  }).default("0"),
+  maxUses: integer("max_uses"),
+  usedCount: integer("used_count").default(0),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const categoriesRelations = relations(categoriesTable, ({ many }) => ({
   products: many(productsTable),
 }));

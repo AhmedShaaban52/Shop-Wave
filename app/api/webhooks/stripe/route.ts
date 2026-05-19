@@ -1,6 +1,6 @@
 import { stripe } from "@/lib/stripe";
 import { headers } from "next/headers";
-import { supabaseAdmin } from "@/lib/supabase/admin"; 
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -19,8 +19,8 @@ export async function POST(req: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as any;
-
     const userId = session.metadata.userId;
+    const couponCode = session.metadata.couponCode;
     const items = JSON.parse(session.metadata.items);
 
     const { data: order, error: orderError } = await supabaseAdmin
@@ -37,18 +37,24 @@ export async function POST(req: Request) {
 
     if (orderError) return new Response("Error saving order", { status: 500 });
 
-    const orderItems = items.map((item: any) => ({
-      order_id: order.id,
-      product_id: item.productId,
-      name: item.name,
-      image: item.image,
-      price: item.price,
-      quantity: item.quantity,
-    }));
-
-    await supabaseAdmin.from("order_items").insert(orderItems);
+    await supabaseAdmin.from("order_items").insert(
+      items.map((item: any) => ({
+        order_id: order.id,
+        product_id: item.productId,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+    );
 
     await supabaseAdmin.from("carts").delete().eq("user_id", userId);
+
+    if (couponCode) {
+      await supabaseAdmin.rpc("increment_coupon_usage", {
+        coupon_code: couponCode,
+      });
+    }
   }
 
   return new Response(null, { status: 200 });

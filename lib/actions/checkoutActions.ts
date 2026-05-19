@@ -2,7 +2,7 @@
 
 import { stripe } from "@/lib/stripe";
 import { getServerSupabase } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 interface CartItem {
   id: string;
@@ -23,13 +23,19 @@ function getFinalPrice(item: CartItem): number {
   return price;
 }
 
-export async function createCheckoutSession(items: CartItem[], userId: string) {
+export async function createCheckoutSession(
+  items: CartItem[],
+  userId: string,
+  couponCode?: string,
+  couponDiscount?: number,
+) {
   const supabase = await getServerSupabase();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not authenticated");
+  if (!user) return { error: "Not authenticated" };
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   const lineItems = items.map((item) => ({
     price_data: {
@@ -43,14 +49,35 @@ export async function createCheckoutSession(items: CartItem[], userId: string) {
     quantity: item.quantity,
   }));
 
+  let discounts = [];
+
+  if (couponDiscount && couponDiscount > 0) {
+    try {
+      const stripeCoupon = await stripe.coupons.create({
+        amount_off: Math.round(couponDiscount * 100),
+        currency: "usd",
+        duration: "once",
+        name: `Coupon: ${couponCode}`,
+      });
+
+      discounts.push({
+        coupon: stripeCoupon.id,
+      });
+    } catch (stripeErr: any) {
+      console.error("Stripe Coupon Error:", stripeErr.message);
+    }
+  }
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: lineItems,
+    discounts: discounts,
     mode: "payment",
-    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
+    success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/cart`,
     metadata: {
       userId,
+      couponCode: couponCode || "",
       items: JSON.stringify(
         items.map((i) => ({
           productId: i.id,
@@ -63,11 +90,11 @@ export async function createCheckoutSession(items: CartItem[], userId: string) {
     },
   });
 
-  redirect(session.url!);
+  return { url: session.url };
 }
+
 export async function getUserOrders() {
   const supabase = await getServerSupabase();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -75,12 +102,7 @@ export async function getUserOrders() {
 
   const { data, error } = await supabase
     .from("orders")
-    .select(
-      `
-      *,
-      order_items (*)
-    `,
-    )
+    .select(`*, order_items (*)`)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -101,14 +123,14 @@ export async function confirmOrder(sessionId: string) {
 
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   if (session.payment_status !== "paid")
-    return { success: false, error: "لم يتم الدفع" };
+    return { success: false, error: "Payment not completed" };
 
   const userId = session.metadata?.userId;
   const items = JSON.parse(session.metadata?.items || "[]");
 
-  if (!userId) return { success: false, error: "بيانات المستخدم مفقودة" };
+  if (!userId) return { success: false, error: "Missing user data" };
 
-  const { data: order, error: orderError } = await supabase
+  const { data: order, error: orderError } = await supabaseAdmin
     .from("orders")
     .insert({
       user_id: userId,
@@ -122,21 +144,18 @@ export async function confirmOrder(sessionId: string) {
 
   if (orderError) throw orderError;
 
-  const orderItems = items.map((item: any) => ({
-    order_id: order.id,
-    product_id: item.productId,
-    name: item.name,
-    image: item.image,
-    price: item.price,
-    quantity: item.quantity,
-  }));
+  await supabaseAdmin.from("order_items").insert(
+    items.map((item: any) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      name: item.name,
+      image: item.image,
+      price: item.price,
+      quantity: item.quantity,
+    })),
+  );
 
-  const { error: itemsError } = await supabase
-    .from("order_items")
-    .insert(orderItems);
-  if (itemsError) throw itemsError;
-
-  await supabase.from("carts").delete().eq("user_id", userId);
+  await supabaseAdmin.from("carts").delete().eq("user_id", userId);
 
   return { success: true };
 }

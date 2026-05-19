@@ -1,10 +1,17 @@
 import { z } from "zod";
-import { categoriesTable, offersTable, orderItemsTable, ordersTable, productsTable } from "./schema";
+import {
+  categoriesTable,
+  couponsTable,
+  offersTable,
+  orderItemsTable,
+  ordersTable,
+  productsTable,
+} from "./schema";
 
 export type Category = typeof categoriesTable.$inferSelect;
 export type Offer = typeof offersTable.$inferSelect;
 export type Product = typeof productsTable.$inferSelect;
-export type Order = typeof ordersTable.$inferSelect; 
+export type Order = typeof ordersTable.$inferSelect;
 export type OrderItem = typeof orderItemsTable.$inferSelect;
 
 export const productSchema = z.object({
@@ -41,6 +48,21 @@ export const offerSchema = z.object({
   updatedAt: z.string().optional().or(z.literal("")),
 });
 export type OfferSchemaType = z.infer<typeof offerSchema>;
+
+export type Coupon = typeof couponsTable.$inferSelect;
+
+export const couponSchema = z.object({
+  code: z.string().min(1, "Code is required").max(50).toUpperCase(),
+  discountType: z.enum(["percent", "amount"]),
+  discountValue: z.coerce.number().min(0.01, "Value is required"),
+  minOrderAmount: z.coerce.number().min(0).optional(),
+  maxUses: z.coerce.number().min(1).optional(),
+  startDate: z.string().optional().or(z.literal("")),
+  endDate: z.string().optional().or(z.literal("")),
+  isActive: z.string().optional(),
+});
+
+export type CouponSchemaType = z.infer<typeof couponSchema>
 
 // lib/types.ts
 export type FieldType =
