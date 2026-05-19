@@ -86,7 +86,6 @@ export async function validateCoupon(code: string, orderTotal: number) {
 
   let formattedCode = code.toUpperCase().trim();
 
-
   let { data, error } = await supabase
     .from("coupons")
     .select("*")
@@ -124,7 +123,6 @@ export async function validateCoupon(code: string, orderTotal: number) {
   }
 
   const rawCoupon = data[0];
-
 
   const coupon = {
     id: rawCoupon.id,
